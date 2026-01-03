@@ -1,0 +1,44 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: cd backend && pip install -r requirements.txt
+        
+      - name: Lint
+        run: cd backend && ruff check .
+        
+      - name: Type check
+        run: cd backend && mypy app/
+        
+      - name: Unit tests
+        run: cd backend && pytest tests/unit
+        
+      - name: Property tests
+        run: cd backend && pytest tests/property
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Railway
+        run: echo "Railway auto-deploys from GitHub"
