@@ -126,3 +126,37 @@ async def get_version(version_id: str):
             status_code=500,
             detail=f"获取版本失败: {str(e)}"
         )
+
+
+@router.post("/{version_id}/rollback", response_model=VersionResponse)
+async def rollback_version(version_id: str, user_id: str = "test_user"):
+    """
+    回滚到特定版本
+    
+    将指定版本的内容作为新版本保存
+    """
+    try:
+        new_version = await version_manager.rollback_version(
+            user_id=user_id,
+            version_id=version_id
+        )
+        
+        return VersionResponse(
+            id=new_version.id,
+            user_id=new_version.user_id,
+            content=new_version.content,
+            type=new_version.type.value,
+            created_at=new_version.created_at.isoformat(),
+            formatted_title=new_version.formatted_title
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"回滚版本失败: {str(e)}"
+        )

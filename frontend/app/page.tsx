@@ -73,6 +73,19 @@ export default function Home() {
       setIsLoading(true);
       showToast('正在生成优化提示词...', 'info');
       
+      // 保存框架和追问答案到 localStorage，供重新生成时使用
+      const selectedFramework = frameworks.find(f => f.id === answers.frameworkId);
+      if (selectedFramework) {
+        localStorage.setItem('selectedFramework', JSON.stringify(selectedFramework));
+      }
+      localStorage.setItem('clarificationAnswers', JSON.stringify({
+        goalClarity: answers.goalClarity,
+        targetAudience: answers.targetAudience,
+        contextCompleteness: answers.contextCompleteness,
+        formatRequirements: answers.formatRequirements,
+        constraints: answers.constraints,
+      }));
+      
       // 调用生成提示词 API
       const response = await apiClient.generatePrompt({
         input,

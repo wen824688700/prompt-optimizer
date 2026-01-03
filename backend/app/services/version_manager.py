@@ -196,3 +196,50 @@ class VersionManager:
             版本数量
         """
         return len(self.versions.get(user_id, []))
+    
+    async def rollback_version(
+        self,
+        user_id: str,
+        version_id: str
+    ) -> Version:
+        """
+        回滚到特定版本
+        
+        将指定版本的内容作为新版本保存（类型为 SAVE）
+        
+        Args:
+            user_id: 用户 ID
+            version_id: 要回滚到的版本 ID
+        
+        Returns:
+            新创建的版本对象
+        
+        Raises:
+            ValueError: 如果版本不存在
+        """
+        try:
+            # 获取要回滚的版本
+            target_version = await self.get_version(version_id)
+            
+            if target_version is None:
+                raise ValueError(f"Version {version_id} not found")
+            
+            # 验证版本属于该用户
+            if target_version.user_id != user_id:
+                raise ValueError(f"Version {version_id} does not belong to user {user_id}")
+            
+            # 创建新版本（回滚后的版本）
+            new_version = await self.save_version(
+                user_id=user_id,
+                content=target_version.content,
+                version_type=VersionType.SAVE
+            )
+            
+            logger.info(f"Rolled back to version {version_id} for user {user_id}, created new version {new_version.id}")
+            return new_version
+            
+        except ValueError:
+            raise
+        except Exception as e:
+            logger.error(f"Error rolling back to version {version_id}: {e}")
+            raise

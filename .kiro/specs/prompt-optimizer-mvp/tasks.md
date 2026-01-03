@@ -243,29 +243,29 @@
     - 实现用户升级/降级逻辑
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [ ] 11. 后端 API 端点实现
-  - [ ] 11.1 实现框架匹配端点
+- [x] 11. 后端 API 端点实现
+  - [x] 11.1 实现框架匹配端点
     - POST /api/v1/frameworks/match
     - 验证用户输入（≥10 字符）
     - 处理附件上传（.txt/.md/.pdf，≤5MB）
     - 返回推荐框架列表
     - _Requirements: 3.1, 3.2, 3.5_
   
-  - [ ] 11.2 实现提示词生成端点
+  - [x] 11.2 实现提示词生成端点
     - POST /api/v1/prompts/generate
     - 验证追问答案
     - 调用 LLMService 生成提示词
     - 自动保存版本
     - _Requirements: 4.5, 5.1, 5.2_
   
-  - [ ] 11.3 实现版本管理端点
+  - [x] 11.3 实现版本管理端点
     - GET /api/v1/versions（获取版本列表）
     - POST /api/v1/versions（保存版本）
     - GET /api/v1/versions/{id}（获取特定版本）
     - POST /api/v1/versions/{id}/rollback（回滚版本）
     - _Requirements: 6.4, 6.6, 6.7, 6.9_
   
-  - [ ] 11.4 实现配额管理端点
+  - [x] 11.4 实现配额管理端点
     - GET /api/v1/quota（获取配额信息）
     - 返回已用配额、总配额、重置时间
     - _Requirements: 8.7_

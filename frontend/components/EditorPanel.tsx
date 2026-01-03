@@ -46,6 +46,13 @@ export default function EditorPanel({
     }
   }, [initialContent]);
 
+  // Update content when initialContent changes (e.g., from "Modify" button)
+  useEffect(() => {
+    if (initialContent) {
+      setContent(initialContent);
+    }
+  }, [initialContent]);
+
   const handleRegenerate = () => {
     if (content.trim()) {
       onRegenerate(content);

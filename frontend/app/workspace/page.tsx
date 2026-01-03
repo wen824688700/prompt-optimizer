@@ -39,16 +39,51 @@ export default function WorkspacePage() {
   const handleRegenerate = async (content: string) => {
     setIsLoading(true);
     try {
-      // TODO: Call API to regenerate prompt
-      console.log('Regenerating with content:', content);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const newContent = `# 优化后的提示词\n\n基于您的输入：\n${content}\n\n这是重新生成的优化内容...`;
+      // 从 localStorage 获取之前保存的框架和追问答案
+      const savedFramework = localStorage.getItem('selectedFramework');
+      const savedAnswers = localStorage.getItem('clarificationAnswers');
+      
+      if (!savedFramework || !savedAnswers) {
+        console.error('Missing framework or clarification answers');
+        // TODO: 使用 Toast 组件替代 alert
+        alert('缺少必要的信息，请返回首页重新开始');
+        setIsLoading(false);
+        return;
+      }
+
+      const framework = JSON.parse(savedFramework);
+      const answers = JSON.parse(savedAnswers);
+
+      // 使用环境变量获取 API URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+      // 调用后端 API 重新生成
+      const response = await fetch(`${apiUrl}/api/v1/prompts/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: content,
+          framework_id: framework.id,
+          clarification_answers: answers,
+          user_id: 'test_user',
+          account_type: 'free',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || '生成失败');
+      }
+
+      const data = await response.json();
+      const newContent = data.output;
       setOutputContent(newContent);
       
-      // Auto-save as new version
+      // 自动保存为新版本
       const newVersion: Version = {
-        id: Date.now().toString(),
+        id: data.version_id,
         content: newContent,
         type: 'optimize',
         createdAt: new Date().toISOString(),
@@ -56,6 +91,8 @@ export default function WorkspacePage() {
       setVersions(prev => [newVersion, ...prev]);
     } catch (error) {
       console.error('Failed to regenerate:', error);
+      // TODO: 使用 Toast 组件替代 alert
+      alert(`重新生成失败: ${error instanceof Error ? error.message : '未知错误'}`);
     } finally {
       setIsLoading(false);
     }
