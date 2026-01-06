@@ -90,50 +90,6 @@ prompt-optimizer-mvp/
 └── README.md            # 项目主文档
 ```
 
-## 🛠️ 本地开发
-
-### 前置要求
-- Node.js 18+
-- Python 3.11+
-- PostgreSQL 15+ (或使用 Supabase)
-
-### Frontend 开发
-```bash
-cd frontend
-npm install              # 安装依赖
-npm run dev             # 启动开发服务器
-```
-访问 http://localhost:3000
-
-### Backend 开发
-```bash
-cd backend
-python -m venv venv                    # 创建虚拟环境
-venv\Scripts\activate                  # 激活虚拟环境 (Windows)
-pip install -r requirements.txt        # 安装依赖
-uvicorn app.main:app --reload          # 启动开发服务器
-```
-访问 http://localhost:8000/docs (API 文档)
-
-### 环境变量配置
-参考 `frontend/.env.example` 和 `backend/.env.example` 创建本地环境变量文件。
-
-## 🌐 部署环境
-
-- **Frontend**: Vercel (https://384866.xyz)
-- **Backend**: Railway (https://api.384866.xyz)
-- **Database**: Supabase (PostgreSQL)
-
-详见 [部署文档](.kiro/specs/prompt-optimizer-mvp/design.md)
-
-## 📚 文档
-
-- [需求文档](.kiro/specs/prompt-optimizer-mvp/requirements.md)
-- [设计文档](.kiro/specs/prompt-optimizer-mvp/design.md)
-- [任务清单](.kiro/specs/prompt-optimizer-mvp/tasks.md)
-- [技术栈说明](.kiro/steering/tech.md)
-- [项目结构说明](.kiro/steering/structure.md)
-
 ## 📄 License
 
 MIT

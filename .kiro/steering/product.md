@@ -24,8 +24,8 @@ Prompt Optimizer MVP - 智能提示词优化工具
 7. 支持继续优化或回滚到历史版本
 
 ## 部署环境
-- Frontend: Vercel (https://384866.xyz)
-- Backend: Railway (https://api.384866.xyz)
+- Frontend: Vercel
+- Backend: Railway
 - Database: Supabase (PostgreSQL)
 
 ## 外部服务

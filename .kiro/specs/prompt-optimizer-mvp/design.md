@@ -1020,10 +1020,10 @@ def test_property_22_free_user_quota_exceeded(used_quota: int):
 
 **Frontend (.env.production):**
 ```bash
-NEXT_PUBLIC_API_URL=https://api.384866.xyz
+NEXT_PUBLIC_API_URL=https://your-api-domain.com
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
-NEXT_PUBLIC_SITE_URL=https://384866.xyz
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
 **Backend (.env.production):**
@@ -1275,38 +1275,34 @@ alembic upgrade head
 
 ### Custom Domain Setup
 
-**Domain:** 384866.xyz (Spaceship + Cloudflare DNS)
+**配置自定义域名：**
 
-**Frontend (384866.xyz):**
+**Frontend 域名配置：**
 1. Vercel Dashboard → Settings → Domains
-2. 添加 `384866.xyz` 和 `www.384866.xyz`
-3. 在 Cloudflare DNS 配置记录：
+2. 添加您的域名（例如 `example.com` 和 `www.example.com`）
+3. 在 DNS 提供商配置 CNAME 记录：
    ```
    Type: CNAME
    Name: @
    Target: cname.vercel-dns.com
-   Proxy status: DNS only (灰色云朵)
    TTL: Auto
    
    Type: CNAME
    Name: www
    Target: cname.vercel-dns.com
-   Proxy status: DNS only (灰色云朵)
    TTL: Auto
    ```
 4. 等待 DNS 传播（通常 5-10 分钟）
 5. Vercel 自动配置 SSL 证书（Let's Encrypt）
 
-**Backend (api.384866.xyz):**
+**Backend 域名配置：**
 1. Railway Dashboard → Settings → Domains
-2. 添加 `api.384866.xyz`
-3. 在 Cloudflare DNS 配置记录：
+2. 添加您的 API 子域名（例如 `api.example.com`）
+3. 在 DNS 提供商配置 CNAME 记录：
    ```
    Type: CNAME
    Name: api
    Target: xxx.up.railway.app (从 Railway 获取)
-   Proxy status: DNS only (灰色云朵)
-   Proxy status: DNS only (灰色云朵)
    TTL: Auto
    ```
 4. 等待 DNS 传播

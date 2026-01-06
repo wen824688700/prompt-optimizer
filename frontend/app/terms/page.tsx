@@ -5,7 +5,7 @@ export default function TermsPage() {
       <p style={{ textAlign: 'center', color: '#666', marginBottom: '50px', fontSize: '14px' }}>Last modified: January 4, 2026</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>1. Introduction</h2>
-      <p style={{ marginBottom: '15px' }}>These Terms of Service ("Terms") determine the rules of the Service and clarify the legal relationship between the entity using the Service and Prompt Optimizer ("Company"). The Company operates web pages located at 384866.xyz ("Website") and offers Service. Using the Website and/or the Service in any manner, the User declares that they have read, understood and accept the provisions of the Terms and Privacy Policy.</p>
+      <p style={{ marginBottom: '15px' }}>These Terms of Service ("Terms") determine the rules of the Service and clarify the legal relationship between the entity using the Service and Prompt Optimizer ("Company"). The Company operates the Service. Using the Service in any manner, the User declares that they have read, understood and accept the provisions of the Terms and Privacy Policy.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>2. Definitions</h2>
       <p style={{ marginBottom: '10px' }}><strong>Account</strong> - An individualized panel serving the User to use the Service and/or the Website.</p>
@@ -15,9 +15,9 @@ export default function TermsPage() {
       <p style={{ marginBottom: '10px' }}><strong>Content</strong> - Contents such as texts, pictures and other, which the User publishes, presents or sends on the Website or with the use of Service.</p>
       <p style={{ marginBottom: '10px' }}><strong>Device</strong> - Devices such as a computer, telephone, smartphone, tablet or other electronic equipment which allows browsing web pages.</p>
       <p style={{ marginBottom: '10px' }}><strong>Service</strong> - Together the Website and/or the API.</p>
-      <p style={{ marginBottom: '10px' }}><strong>Terms</strong> - These terms of service available at https://384866.xyz/terms.</p>
+      <p style={{ marginBottom: '10px' }}><strong>Terms</strong> - These terms of service.</p>
       <p style={{ marginBottom: '10px' }}><strong>User</strong> - An entity who owns the Account.</p>
-      <p style={{ marginBottom: '10px' }}><strong>Website</strong> - Web pages located at 384866.xyz.</p>
+      <p style={{ marginBottom: '10px' }}><strong>Website</strong> - Web pages operated by the Company.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>3. General Rules</h2>
       <p style={{ marginBottom: '15px' }}>Using the Service means full acceptance of the Terms. Each entity using the Service and/or the Website is obliged to use it in accordance with its purpose resulting from the Terms.</p>
@@ -38,7 +38,7 @@ export default function TermsPage() {
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>6. Subscriptions</h2>
       <p style={{ marginBottom: '15px' }}>Some parts of Service are billed on a subscription basis ("Subscription"). You will be billed in advance on a recurring and periodic basis ("Billing Cycle"). Billing cycles are set on a monthly basis.</p>
-      <p style={{ marginBottom: '15px' }}>At the end of each Billing Cycle, your Subscription will automatically renew under the exact same conditions unless you cancel it or the Company cancels it. You may cancel your Subscription renewal either through your Account or by contacting Company's customer support team at support@384866.xyz.</p>
+      <p style={{ marginBottom: '15px' }}>At the end of each Billing Cycle, your Subscription will automatically renew under the exact same conditions unless you cancel it or the Company cancels it. You may cancel your Subscription renewal either through your Account or by contacting Company's customer support team.</p>
       <p style={{ marginBottom: '15px' }}>A valid payment method, including credit or debit card, is required to process the payment for your subscription.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>7. Fee Changes</h2>
@@ -80,8 +80,7 @@ export default function TermsPage() {
       <p style={{ marginBottom: '15px' }}>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>17. Contact Us</h2>
-      <p style={{ marginBottom: '8px' }}>If you have any questions about these Terms, please contact us:</p>
-      <p style={{ marginBottom: '15px' }}><strong>Email:</strong> support@384866.xyz</p>
+      <p style={{ marginBottom: '8px' }}>If you have any questions about these Terms, please contact us through your Account settings.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>18. Acknowledgement</h2>
       <p style={{ marginBottom: '15px' }}>By using our Service, you acknowledge that you have read and understood these Terms of Service and agree to be bound by them.</p>

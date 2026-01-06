@@ -5,7 +5,7 @@ export default function PrivacyPage() {
       <p style={{ textAlign: 'center', color: '#666', marginBottom: '50px', fontSize: '14px' }}>Last modified: January 4, 2026</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>1. Introduction</h2>
-      <p style={{ marginBottom: '15px' }}>Please read this Privacy Policy before using our Service including the Website and API (collectively, the "Service"). This Privacy Policy governs the types of information and data we collect and how we use and share this information. Your access to and use of the Service are available for your use only on the condition that you agree to the Terms of Service available at https://384866.xyz/terms.</p>
+      <p style={{ marginBottom: '15px' }}>Please read this Privacy Policy before using our Service including the Website and API (collectively, the "Service"). This Privacy Policy governs the types of information and data we collect and how we use and share this information. Your access to and use of the Service are available for your use only on the condition that you agree to the Terms of Service.</p>
       <p style={{ marginBottom: '15px' }}>Prompt Optimizer ("Company") operates the Service. We use your data to provide and improve Service. By using Service, you agree to the collection and use of information in accordance with this policy.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>2. Definitions</h2>
@@ -81,8 +81,7 @@ export default function PrivacyPage() {
       <p style={{ marginBottom: '15px' }}>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last modified" date at the top of this page.</p>
 
       <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginTop: '40px', marginBottom: '15px', borderBottom: '2px solid #333', paddingBottom: '8px' }}>15. Contact Us</h2>
-      <p style={{ marginBottom: '8px' }}>If you have any questions about this Privacy Policy, please contact us:</p>
-      <p style={{ marginBottom: '15px' }}><strong>Email:</strong> support@384866.xyz</p>
+      <p style={{ marginBottom: '8px' }}>If you have any questions about this Privacy Policy, please contact us through your Account settings.</p>
     </div>
   );
 }

@@ -13,10 +13,6 @@ export default function Footer() {
           <a href="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
             Terms of Service
           </a>
-          <span className="text-gray-600">·</span>
-          <a href="mailto:support@384866.xyz" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Contact Us
-          </a>
         </div>
 
         {/* 版权信息 */}
