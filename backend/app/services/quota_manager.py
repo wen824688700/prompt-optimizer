@@ -141,7 +141,6 @@ class QuotaManager:
             # 开发/测试环境跳过配额检查
             if self.skip_quota_check:
                 can_generate = True
-                logger.debug(f"Quota check skipped for {self.environment} environment")
             else:
                 # 计算是否可以生成
                 can_generate = used < total
@@ -203,7 +202,6 @@ class QuotaManager:
                 quota_key = self._get_user_quota_key(user_id, user_timezone_offset)
                 transaction = QuotaTransaction(user_id, quota_key, self)
                 transaction.consumed = True
-                logger.debug(f"Quota consumption skipped for {self.environment} environment")
                 return transaction
             
             # 先检查配额
