@@ -2,8 +2,6 @@
 
 > 基于 57 个经过验证的 Prompt 工程框架，智能匹配最佳方案，3 分钟生成专业级提示词
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/prompt-optimizer-mvp)
-
 ## ✨ 特性
 
 - 🎯 **智能框架匹配** - 从 57 个 Prompt 框架中自动推荐最合适的方案
@@ -13,39 +11,7 @@
 - 📎 **附件支持** - 上传参考文档提供更多上下文
 - 🚀 **完全免费部署** - 基于 Vercel Serverless 架构
 
-## 🚀 快速开始
 
-### 一键部署到 Vercel
-
-1. 点击上方 "Deploy with Vercel" 按钮
-2. 按照 [部署指南](docs/DEPLOYMENT.md) 配置环境变量
-3. 等待部署完成，开始使用
-
-### 本地开发
-
-```bash
-# 1. 克隆项目
-git clone https://github.com/your-username/prompt-optimizer-mvp.git
-cd prompt-optimizer-mvp/frontend
-
-# 2. 安装依赖
-npm install
-
-# 3. 配置环境变量
-cp .env.example .env.local
-# 编辑 .env.local 填写真实值
-
-# 4. 启动开发服务器
-npm run dev
-# 访问 http://localhost:3000
-```
-
-## 📚 文档
-
-- 📖 [部署指南](docs/DEPLOYMENT.md) - 完整的部署文档
-- 🔑 [环境变量配置](docs/ENV_GUIDE.md) - 详细的配置说明
-- 🚀 [快速开始](docs/QUICKSTART.md) - 5 分钟快速部署
-- ✅ [部署检查清单](docs/CHECKLIST.md) - 逐步检查配置
 
 ## 💻 技术栈
 
