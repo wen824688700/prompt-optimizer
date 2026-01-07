@@ -143,10 +143,22 @@ function loadFrameworkDescription(frameworkId: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Frameworks API] Received POST request');
+    
     const body = await request.json();
+    console.log('[Frameworks API] Request body:', JSON.stringify(body));
     
     // 验证必需字段
-    if (!body.input || body.input.length < 10) {
+    if (!body.input) {
+      console.error('[Frameworks API] Missing input field');
+      return NextResponse.json(
+        { error: '缺少必需字段: input' },
+        { status: 400 }
+      );
+    }
+    
+    if (body.input.length < 10) {
+      console.error('[Frameworks API] Input too short:', body.input.length);
       return NextResponse.json(
         { error: '输入至少需要 10 个字符' },
         { status: 400 }
@@ -154,12 +166,16 @@ export async function POST(request: NextRequest) {
     }
 
     const { input, model = 'deepseek', user_type = 'free' } = body;
+    console.log('[Frameworks API] Processing:', { input: input.substring(0, 50), model, user_type });
 
     // 加载框架摘要
     const frameworksSummary = loadFrameworksSummary();
+    console.log('[Frameworks API] Loaded frameworks summary');
 
     // 调用 LLM 分析意图
+    console.log('[Frameworks API] Calling DeepSeek API...');
     const frameworkIds = await analyzeIntent(input, frameworksSummary);
+    console.log('[Frameworks API] Matched frameworks:', frameworkIds);
 
     // 构建框架候选列表
     const candidates: FrameworkCandidate[] = frameworkIds.map((frameworkId, idx) => ({
@@ -170,10 +186,11 @@ export async function POST(request: NextRequest) {
       reasoning: `基于用户输入分析，${frameworkId} 最适合此场景`,
     }));
 
+    console.log('[Frameworks API] Returning', candidates.length, 'candidates');
     return NextResponse.json({ frameworks: candidates });
 
   } catch (error: any) {
-    console.error('Framework matching error:', error);
+    console.error('[Frameworks API] Error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

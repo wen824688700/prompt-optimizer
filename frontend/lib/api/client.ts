@@ -78,7 +78,12 @@ class APIClient {
    * Match frameworks based on user input
    */
   async matchFrameworks(request: MatchFrameworksRequest): Promise<MatchFrameworksResponse> {
-    const response = await fetch(`${this.baseURL}/frameworks`, {
+    const url = `${this.baseURL}/frameworks`;
+    console.log('[API Client] matchFrameworks - URL:', url);
+    console.log('[API Client] matchFrameworks - baseURL:', this.baseURL);
+    console.log('[API Client] matchFrameworks - Request:', request);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,12 +91,18 @@ class APIClient {
       body: JSON.stringify(request),
     });
 
+    console.log('[API Client] matchFrameworks - Response status:', response.status);
+    console.log('[API Client] matchFrameworks - Response URL:', response.url);
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('[API Client] matchFrameworks - Error:', error);
       throw new Error(error.error || error.detail || `HTTP ${response.status}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('[API Client] matchFrameworks - Success:', data);
+    return data;
   }
 
   /**
