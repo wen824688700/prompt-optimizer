@@ -31,8 +31,7 @@ prompt-optimizer-mvp/
 │   ├── lib/           # 工具函数和状态管理
 │   └── api/           # Serverless Functions (Python)
 ├── backend/           # FastAPI 后端（本地开发用）
-├── skills-main/       # 57 个 Prompt 框架资料
-└── docs/              # 文档
+└── skills-main/       # 57 个 Prompt 框架资料
 ```
 
 
