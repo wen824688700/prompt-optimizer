@@ -1,12 +1,6 @@
 {
   "framework": "nextjs",
   "regions": ["sin1"],
-  "functions": {
-    "api/**/*.py": {
-      "runtime": "python3.9",
-      "maxDuration": 60
-    }
-  },
   "rewrites": [
     {
       "source": "/api/v1/frameworks/match",
