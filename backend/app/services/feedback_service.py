@@ -23,6 +23,12 @@ class FeedbackService:
     def supabase(self):
         """延迟初始化 Supabase 客户端"""
         if self._supabase is None:
+            # 打印调试信息
+            logger.info(f"🔍 开始初始化 Supabase 客户端...")
+            logger.info(f"🔍 dev_mode: {self.settings.dev_mode}")
+            logger.info(f"🔍 supabase_url: {self.settings.supabase_url[:30] if self.settings.supabase_url else 'None'}...")
+            logger.info(f"🔍 supabase_key: {'已设置' if self.settings.supabase_key else '未设置'}")
+            
             if self.settings.dev_mode:
                 logger.warning("⚠️ 开发模式已启用 (DEV_MODE=true)，反馈功能将使用模拟数据")
                 return None
@@ -39,13 +45,14 @@ class FeedbackService:
                 # 延迟导入，避免在模块加载时导入
                 from supabase import create_client
                 
+                logger.info(f"🔍 正在创建 Supabase 客户端...")
                 self._supabase = create_client(
                     self.settings.supabase_url,
                     self.settings.supabase_key
                 )
                 logger.info(f"✅ Supabase 客户端初始化成功（反馈功能）- URL: {self.settings.supabase_url[:30]}...")
             except Exception as e:
-                logger.error(f"❌ Supabase 客户端初始化失败: {e}")
+                logger.error(f"❌ Supabase 客户端初始化失败: {type(e).__name__}: {e}")
                 logger.warning("将回退到模拟数据模式（票数不会更新）")
                 return None
         
