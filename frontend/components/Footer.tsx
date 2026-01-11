@@ -23,8 +23,8 @@ export default function Footer() {
 
       {/* 右下角设计者信息和咖啡按钮 - 绝对定位到 footer 右下角 */}
       <div className="absolute bottom-8 right-4 flex flex-col items-end gap-2">
-        <p className="text-sm text-gray-400">
-          design by <span className="font-semibold text-gray-300">Jwen</span>
+        <p className="text-xs text-gray-400">
+          @design by <span className="font-semibold text-gray-300">Jwen</span>
         </p>
         <div className="flex items-center gap-2">
           <p className="text-sm text-gray-400">
