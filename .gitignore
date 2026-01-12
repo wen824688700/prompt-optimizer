@@ -67,6 +67,9 @@ htmlcov/
 # Temporary docs
 Agent.md
 
+# Documentation with sensitive info
+docs/
+
 # 测试脚本（包含敏感信息）
 check_supabase_tables.py
 test_resend_api.py
