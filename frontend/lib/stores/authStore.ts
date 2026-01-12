@@ -6,8 +6,9 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
   id: string;
-  email: string;
-  avatar: string;
+  email?: string;
+  username?: string;
+  avatar?: string;
   accountType: 'free' | 'pro';
   name?: string;
 }

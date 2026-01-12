@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     
     # 开发模式（跳过数据库连接和认证）
     dev_mode: bool = False
+    
+    # Resend 邮件服务
+    resend_api_key: str | None = None
+    resend_from_email: str = "onboarding@resend.dev"
 
     class Config:
         env_file = ".env"
