@@ -9,31 +9,8 @@ class MockUser:
     def __init__(self, user_id: str = "dev-user-001"):
         self.id = user_id
         self.email = "dev@test.com"
-        self.account_type = "pro"  # 开发模式默认 pro 账户
+        self.account_type = "free"  # 开发模式默认 free 账户
         self.created_at = datetime.now()
-
-
-class MockQuotaService:
-    """模拟配额服务"""
-    
-    def __init__(self):
-        self.usage = {}
-    
-    async def check_quota(self, user_id: str) -> dict[str, Any]:
-        """检查配额"""
-        return {
-            "user_id": user_id,
-            "daily_limit": 100,
-            "daily_used": self.usage.get(user_id, 0),
-            "remaining": 100 - self.usage.get(user_id, 0),
-            "account_type": "pro",
-        }
-    
-    async def increment_usage(self, user_id: str) -> bool:
-        """增加使用次数"""
-        current = self.usage.get(user_id, 0)
-        self.usage[user_id] = current + 1
-        return True
 
 
 class MockVersionService:
@@ -84,18 +61,12 @@ class MockVersionService:
 
 
 # 全局单例
-_mock_quota_service = MockQuotaService()
 _mock_version_service = MockVersionService()
 
 
 def get_mock_user(user_id: str = "dev-user-001") -> MockUser:
     """获取模拟用户"""
     return MockUser(user_id)
-
-
-def get_mock_quota_service() -> MockQuotaService:
-    """获取模拟配额服务"""
-    return _mock_quota_service
 
 
 def get_mock_version_service() -> MockVersionService:

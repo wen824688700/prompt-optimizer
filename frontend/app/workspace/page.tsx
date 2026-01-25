@@ -7,35 +7,53 @@ import MarkdownTab from '@/components/MarkdownTab';
 import VersionHistory from '@/components/VersionHistory';
 import VersionComparison from '@/components/VersionComparison';
 import UserAvatar from '@/components/UserAvatar';
+import LoginPromptBanner from '@/components/LoginPromptBanner';
+import LoginModal from '@/components/LoginModal';
+import SaveVersionModal from '@/components/SaveVersionModal';
+import LeavePageModal from '@/components/LeavePageModal';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/lib/stores/authStore';
-
-interface Version {
-  id: string;
-  content: string;
-  type: 'save' | 'optimize';
-  createdAt: string;
-  description?: string;
-  versionNumber: string;
-  topic?: string;
-  framework_id?: string;
-  framework_name?: string;
-  original_input?: string;
-}
+import { useApiConfigStore } from '@/lib/stores/apiConfigStore';
+import { useModelStore } from '@/lib/stores/modelStore';
+import { useWorkspaceStore, Version } from '@/lib/stores/workspaceStore';
+import { useBeforeUnload } from '@/lib/hooks/useBeforeUnload';
 
 type ViewMode = 'editor' | 'comparison';
 
 export default function WorkspacePage() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
+  const { apiKey, loadConfig } = useApiConfigStore();
+  const { selectedModel } = useModelStore();
+  const { 
+    versions, 
+    loadVersions, 
+    saveVersion: saveVersionToStore, 
+    deleteVersion: deleteVersionFromStore,
+    updateVersion: updateVersionInStore
+  } = useWorkspaceStore();
   const [outputContent, setOutputContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [versions, setVersions] = useState<Version[]>([]);
   const [editorContent, setEditorContent] = useState('');
   const [selectedVersionIds, setSelectedVersionIds] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('editor');
   const [currentVersionId, setCurrentVersionId] = useState<string | undefined>();
   const [currentTopic, setCurrentTopic] = useState<string>(''); // 当前工作流的主题
+  const [showLoginModal, setShowLoginModal] = useState(false); // 登录弹窗状态
+  const [showSaveModal, setShowSaveModal] = useState(false); // 保存版本弹窗
+  const [showLeaveModal, setShowLeaveModal] = useState(false); // 离开页面弹窗
+  const [pendingSaveContent, setPendingSaveContent] = useState<string>(''); // 待保存的内容
+  
+  // 离开页面提示（匿名用户且有版本时）
+  const shouldWarnBeforeLeave = !isAuthenticated && versions.length > 0;
+  const dontShowLeavePrompt = typeof window !== 'undefined' 
+    ? localStorage.getItem('dontShowLeavePrompt') === 'true'
+    : false;
+  
+  useBeforeUnload(
+    shouldWarnBeforeLeave && !dontShowLeavePrompt,
+    '您有未保存的版本，确定要离开吗？'
+  );
   
   // 可拖拽分隔条的状态
   const [leftPanelWidth, setLeftPanelWidth] = useState(256); // 版本历史宽度（默认 w-64 = 256px）
@@ -101,15 +119,17 @@ export default function WorkspacePage() {
 
   // 从数据库或 localStorage 加载初始数据
   useEffect(() => {
-    const loadVersions = async () => {
+    const initWorkspace = async () => {
       try {
-        // 1. 尝试从 localStorage 加载临时数据（首次生成后跳转过来的情况）
+        // 1. 加载版本历史（根据登录状态自动选择 IndexedDB 或 API）
+        await loadVersions(user?.id);
+        
+        // 2. 尝试从 localStorage 加载临时数据（首次生成后跳转过来的情况）
         const savedPrompt = localStorage.getItem('currentPrompt');
         const originalInput = localStorage.getItem('originalInput');
         
         if (savedPrompt && originalInput) {
-          // 首次生成后跳转过来，直接显示内容，不需要再保存
-          // 因为 generatePrompt API 已经保存过了
+          // 首次生成后跳转过来，直接显示内容
           setOutputContent(savedPrompt);
           setEditorContent(originalInput);
           
@@ -121,70 +141,28 @@ export default function WorkspacePage() {
           localStorage.removeItem('currentPrompt');
           localStorage.removeItem('originalInput');
           
-          // 从数据库加载版本历史（包含刚才保存的版本）
-          const userId = user?.id || 'dev-user-001';
-          const dbVersions = await apiClient.getVersions(userId, 20);
-          
-          if (dbVersions && dbVersions.length > 0) {
-            const mappedVersions: Version[] = dbVersions.map(v => ({
-              id: v.id,
-              content: v.content,
-              type: v.type,
-              createdAt: v.created_at,
-              versionNumber: v.version_number || '1.0',
-              description: v.description,
-              topic: v.topic,
-              framework_id: v.framework_id,
-              framework_name: v.framework_name,
-              original_input: v.original_input,
-            }));
-            
-            // 只显示当前 topic 的版本
-            const topicVersions = mappedVersions.filter(v => v.topic === topic);
-            setVersions(topicVersions);
-            if (topicVersions.length > 0) {
-              setCurrentVersionId(topicVersions[0].id);
-            }
+          // 如果有版本，设置当前版本 ID
+          if (versions.length > 0) {
+            setCurrentVersionId(versions[0].id);
           }
-        } else {
-          // 2. 从数据库加载版本历史
-          const userId = user?.id || 'dev-user-001';
-          const dbVersions = await apiClient.getVersions(userId, 20);
-          
-          if (dbVersions && dbVersions.length > 0) {
-            const mappedVersions: Version[] = dbVersions.map(v => ({
-              id: v.id,
-              content: v.content,
-              type: v.type,
-              createdAt: v.created_at,
-              versionNumber: v.version_number || '1.0',
-              description: v.description,
-              topic: v.topic,
-              framework_id: v.framework_id,
-              framework_name: v.framework_name,
-              original_input: v.original_input,
-            }));
-            
-            // 显示所有版本（用户直接访问 workspace 页面的情况）
-            setVersions(mappedVersions);
-            // 恢复最新版本
-            const latestVersion = mappedVersions[0];
-            setOutputContent(latestVersion.content);
-            setCurrentVersionId(latestVersion.id);
-            setCurrentTopic(latestVersion.topic || '');
-            if (latestVersion.original_input) {
-              setEditorContent(latestVersion.original_input);
-            }
+        } else if (versions.length > 0) {
+          // 3. 恢复最新版本
+          const latestVersion = versions[0];
+          setOutputContent(latestVersion.content);
+          setCurrentVersionId(latestVersion.id);
+          setCurrentTopic(latestVersion.topic || '');
+          if (latestVersion.originalInput) {
+            setEditorContent(latestVersion.originalInput);
           }
         }
       } catch (error) {
-        console.error('Failed to load versions:', error);
+        console.error('Failed to load workspace:', error);
         // 不显示错误提示，静默失败
       }
     };
     
-    loadVersions();
-  }, [user?.id]);
+    initWorkspace();
+  }, [user?.id, loadVersions]);
 
   const handleRegenerate = async (content: string) => {
     setIsLoading(true);
@@ -203,13 +181,21 @@ export default function WorkspacePage() {
       const answers = JSON.parse(savedAnswers);
       const userId = user?.id || 'dev-user-001';
 
+      // 检查 API 密钥
+      if (!apiKey) {
+        alert('请先配置 API 密钥');
+        router.push('/input');
+        return;
+      }
+
       const data = await apiClient.generatePrompt({
         input: content,
         framework_id: framework.id,
         clarification_answers: answers,
         user_id: userId,
         account_type: user?.accountType || 'free',
-        model: 'deepseek', // 添加 model 参数
+        model: selectedModel || 'deepseek',
+        api_key: apiKey, // 传递 API 密钥
       });
 
       const newContent = data.output;
@@ -218,33 +204,18 @@ export default function WorkspacePage() {
       // 生成 topic
       const topic = currentTopic || content.slice(0, 10);
       
-      // 保存新版本到数据库
-      const savedVersion = await apiClient.saveVersion({
-        user_id: userId,
+      // 保存新版本（自动根据登录状态选择存储方式）
+      const newVersion = await saveVersionToStore({
         content: newContent,
         type: 'optimize',
-        version_number: getNextVersionNumber('optimize'),
+        versionNumber: getNextVersionNumber('optimize'),
         description: '重新优化生成',
         topic: topic,
-        framework_id: framework.id,
-        framework_name: framework.name,
-        original_input: content,
-      });
+        frameworkId: framework.id,
+        frameworkName: framework.name,
+        originalInput: content,
+      }, userId);
       
-      const newVersion: Version = {
-        id: savedVersion.id,
-        content: savedVersion.content,
-        type: savedVersion.type,
-        createdAt: savedVersion.created_at,
-        versionNumber: savedVersion.version_number || getNextVersionNumber('optimize'),
-        description: savedVersion.description,
-        topic: savedVersion.topic,
-        framework_id: savedVersion.framework_id,
-        framework_name: savedVersion.framework_name,
-        original_input: savedVersion.original_input,
-      };
-      
-      setVersions(prev => [newVersion, ...prev]);
       setCurrentVersionId(newVersion.id);
     } catch (error) {
       console.error('Failed to regenerate:', error);
@@ -260,38 +231,36 @@ export default function WorkspacePage() {
   };
 
   const handleSave = async (content: string) => {
+    // 匿名用户：显示保存提示弹窗
+    if (!isAuthenticated) {
+      setPendingSaveContent(content);
+      setShowSaveModal(true);
+      return;
+    }
+    
+    // 登录用户：直接保存
+    await performSave(content);
+  };
+  
+  // 实际执行保存
+  const performSave = async (content: string) => {
     try {
       const savedFramework = localStorage.getItem('selectedFramework');
       const framework = savedFramework ? JSON.parse(savedFramework) : null;
-      const userId = user?.id || 'dev-user-001';
+      const userId = user?.id;
       
-      // 保存到数据库（使用当前 topic）
-      const savedVersion = await apiClient.saveVersion({
-        user_id: userId,
+      // 保存版本（自动根据登录状态选择存储方式）
+      const newVersion = await saveVersionToStore({
         content,
         type: 'save',
-        version_number: getNextVersionNumber('save'),
+        versionNumber: getNextVersionNumber('save'),
         description: undefined, // 不设置描述，让前端显示"未命名版本"
         topic: currentTopic, // 使用当前 topic
-        framework_id: framework?.id,
-        framework_name: framework?.name,
-        original_input: editorContent,
-      });
+        frameworkId: framework?.id,
+        frameworkName: framework?.name,
+        originalInput: editorContent,
+      }, userId);
       
-      const newVersion: Version = {
-        id: savedVersion.id,
-        content: savedVersion.content,
-        type: savedVersion.type,
-        createdAt: savedVersion.created_at,
-        versionNumber: savedVersion.version_number || getNextVersionNumber('save'),
-        description: savedVersion.description,
-        topic: savedVersion.topic,
-        framework_id: savedVersion.framework_id,
-        framework_name: savedVersion.framework_name,
-        original_input: savedVersion.original_input,
-      };
-      
-      setVersions(prev => [newVersion, ...prev]);
       setCurrentVersionId(newVersion.id);
     } catch (error) {
       console.error('Failed to save version:', error);
@@ -344,19 +313,20 @@ export default function WorkspacePage() {
 
   const handleDeleteVersion = async (versionId: string) => {
     try {
-      // TODO: 调用 API 删除版本
-      // await apiClient.deleteVersion(versionId);
+      const userId = user?.id;
       
-      // 从本地状态中删除
-      setVersions(prev => prev.filter(v => v.id !== versionId));
+      // 删除版本（自动根据登录状态选择存储方式）
+      const success = await deleteVersionFromStore(versionId, userId);
       
-      // 如果删除的是当前版本，切换到最新版本
-      if (versionId === currentVersionId && versions.length > 1) {
-        const remainingVersions = versions.filter(v => v.id !== versionId);
-        if (remainingVersions.length > 0) {
-          const latestVersion = remainingVersions[0];
-          setOutputContent(latestVersion.content);
-          setCurrentVersionId(latestVersion.id);
+      if (success) {
+        // 如果删除的是当前版本，切换到最新版本
+        if (versionId === currentVersionId && versions.length > 1) {
+          const remainingVersions = versions.filter(v => v.id !== versionId);
+          if (remainingVersions.length > 0) {
+            const latestVersion = remainingVersions[0];
+            setOutputContent(latestVersion.content);
+            setCurrentVersionId(latestVersion.id);
+          }
         }
       }
     } catch (error) {
@@ -367,13 +337,10 @@ export default function WorkspacePage() {
 
   const handleRenameVersion = async (versionId: string, newName: string) => {
     try {
-      // TODO: 调用 API 更新版本描述
-      // await apiClient.updateVersion(versionId, { description: newName });
+      const userId = user?.id;
       
-      // 更新本地状态
-      setVersions(prev => prev.map(v => 
-        v.id === versionId ? { ...v, description: newName } : v
-      ));
+      // 更新版本描述（自动根据登录状态选择存储方式）
+      await updateVersionInStore(versionId, { description: newName }, userId);
     } catch (error) {
       console.error('Failed to rename version:', error);
       alert(`重命名失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -401,6 +368,41 @@ export default function WorkspacePage() {
     }
   };
 
+  // 处理登录点击
+  const handleLoginClick = () => {
+    setShowLoginModal(true);
+  };
+  
+  // 处理保存弹窗 - 登录并保存
+  const handleLoginAndSave = async () => {
+    setShowSaveModal(false);
+    setShowLoginModal(true);
+    // 登录成功后会自动保存（通过 authStore 的状态变化）
+  };
+  
+  // 处理保存弹窗 - 仅临时保存
+  const handleTempSave = async () => {
+    setShowSaveModal(false);
+    await performSave(pendingSaveContent);
+  };
+  
+  // 处理离开页面弹窗 - 登录并保存
+  const handleLeaveLoginAndSave = () => {
+    setShowLeaveModal(false);
+    setShowLoginModal(true);
+  };
+  
+  // 处理离开页面弹窗 - 稍后
+  const handleLeaveLater = () => {
+    setShowLeaveModal(false);
+  };
+  
+  // 处理离开页面弹窗 - 不再提示
+  const handleDontShowAgain = () => {
+    localStorage.setItem('dontShowLeavePrompt', 'true');
+    setShowLeaveModal(false);
+  };
+
   // 获取对比的两个版本
   const comparisonVersions = selectedVersionIds.length === 2
     ? {
@@ -411,6 +413,14 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-[#1a2332]">
+      {/* 登录提示横幅（匿名用户且版本 >= 3） */}
+      {!isAuthenticated && (
+        <LoginPromptBanner
+          versionCount={versions.length}
+          onLoginClick={handleLoginClick}
+        />
+      )}
+
       {/* 顶部导航 */}
       <nav className="bg-[#242d3d] border-b border-[#3d4a5c] sticky top-0 z-50">
         <div className="px-6 py-4">
@@ -477,6 +487,7 @@ export default function WorkspacePage() {
             onRestoreVersion={handleRestoreVersion}
             onDeleteVersion={handleDeleteVersion}
             onRenameVersion={handleRenameVersion}
+            onLoginClick={handleLoginClick}
           />
         </div>
 
@@ -530,6 +541,29 @@ export default function WorkspacePage() {
           )}
         </div>
       </div>
+
+      {/* 登录弹窗 */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+      
+      {/* 保存版本弹窗（Level 3 - 匿名用户保存时） */}
+      <SaveVersionModal
+        isOpen={showSaveModal}
+        onLoginAndSave={handleLoginAndSave}
+        onTempSave={handleTempSave}
+        onCancel={() => setShowSaveModal(false)}
+      />
+      
+      {/* 离开页面弹窗（Level 4 - 匿名用户有版本时） */}
+      <LeavePageModal
+        isOpen={showLeaveModal}
+        versionCount={versions.length}
+        onLoginAndSave={handleLeaveLoginAndSave}
+        onLater={handleLeaveLater}
+        onDontShowAgain={handleDontShowAgain}
+      />
     </div>
   );
 }

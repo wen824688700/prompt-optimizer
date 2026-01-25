@@ -87,7 +87,7 @@ async def save_version(request: SaveVersionRequest):
     """
     保存新版本
 
-    保存用户的提示词版本
+    保存用户的提示词版本（登录用户最多 20 条）
     """
     try:
         version_type = VersionType.SAVE if request.type == "save" else VersionType.OPTIMIZE
@@ -119,6 +119,12 @@ async def save_version(request: SaveVersionRequest):
             original_input=version.original_input,
         )
 
+    except ValueError as e:
+        # 版本数量限制错误
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,

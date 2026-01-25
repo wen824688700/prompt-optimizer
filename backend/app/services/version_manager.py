@@ -127,8 +127,16 @@ class VersionManager:
 
         Returns:
             保存的版本对象
+            
+        Raises:
+            ValueError: 如果版本数量超过限制
         """
         try:
+            # 检查版本数量限制（登录用户最多 20 条）
+            current_count = await self.get_version_count(user_id)
+            if current_count >= self.MAX_VERSIONS:
+                raise ValueError(f"版本数量已达上限（{self.MAX_VERSIONS} 条），请删除旧版本后再保存")
+            
             now = datetime.now(UTC)
             version_id = str(uuid.uuid4())
             

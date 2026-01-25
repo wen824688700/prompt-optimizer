@@ -5,8 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { getSiteUrl } from '@/lib/supabase/siteUrl';
 import { useAuthStore } from '@/lib/stores/authStore';
-import { useQuotaStore } from '@/lib/stores/quotaStore';
-import { apiClient } from '@/lib/api/client';
 import FeatureVoting from '@/components/FeatureVoting';
 import FeedbackForm from '@/components/FeedbackForm';
 
@@ -15,10 +13,8 @@ export default function AccountClient() {
   const searchParams = useSearchParams();
   const user = useAuthStore((s) => s.user);
   const initAuth = useAuthStore((s) => s.initAuth);
-  const { quota, setQuota } = useQuotaStore();
   const [isWorking, setIsWorking] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoadingQuota, setIsLoadingQuota] = useState(false);
 
   const nextPath = useMemo(() => searchParams.get('next') || '/input', [searchParams]);
 
@@ -26,30 +22,6 @@ export default function AccountClient() {
   useEffect(() => {
     initAuth();
   }, [initAuth]);
-
-  // 加载配额数据
-  useEffect(() => {
-    if (!user) return;
-
-    const loadQuota = async () => {
-      setIsLoadingQuota(true);
-      try {
-        const quotaData = await apiClient.getQuota(user.id, user.accountType);
-        setQuota({
-          used: quotaData.used,
-          total: quotaData.total,
-          resetTime: quotaData.reset_time,
-          canGenerate: quotaData.can_generate,
-        });
-      } catch (error) {
-        console.error('Failed to load quota:', error);
-      } finally {
-        setIsLoadingQuota(false);
-      }
-    };
-
-    loadQuota();
-  }, [user, setQuota]);
 
   const handleGoogleLogin = async () => {
     setIsWorking(true);
@@ -117,7 +89,7 @@ export default function AccountClient() {
         <div className="max-w-4xl mx-auto px-4">
           {/* 产品状态说明 */}
           <div className="mb-6 text-sm text-gray-500">
-            <p>🚀 当前处于测试阶段，所有用户每日可免费使用 10 次生成配额</p>
+            <p>🚀 开源免费使用，请自行配置 LLM API 密钥</p>
             <p>感谢您的使用，您的反馈将帮助我们打造更好的产品！</p>
           </div>
 
@@ -145,62 +117,6 @@ export default function AccountClient() {
                   >
                     退出登录
                   </button>
-                </div>
-              </div>
-
-              {/* 配额信息卡片 */}
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-200/60 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">使用配额</h2>
-                
-                <div className="space-y-4">
-                  {/* 今日使用情况 */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">今日已使用</span>
-                      <span className="text-lg font-bold text-gray-900">
-                        {quota?.used || 0} / {quota?.total || 10} 次
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-cyan-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.min(((quota?.used || 0) / (quota?.total || 10)) * 100, 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* 剩余次数 */}
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-br from-purple-50 to-cyan-50 rounded-xl">
-                    <div>
-                      <div className="text-sm text-gray-600">剩余次数</div>
-                      <div className="text-2xl font-bold text-gray-900 mt-1">
-                        {Math.max((quota?.total || 10) - (quota?.used || 0), 0)} 次
-                      </div>
-                    </div>
-                    <div className="text-4xl">✨</div>
-                  </div>
-
-                  {/* 重置时间提示 */}
-                  <div className="text-sm text-gray-500 text-center">
-                    💡 配额每日 0:00 (UTC+8) 自动重置
-                  </div>
-
-                  {/* 升级提示 */}
-                  {(quota?.used || 0) >= (quota?.total || 10) && (
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚠️</span>
-                        <div>
-                          <div className="font-semibold text-amber-900">今日配额已用完</div>
-                          <div className="text-sm text-amber-700 mt-1">
-                            请明天再来，或升级到 Pro 版本获得更多配额（100次/天）
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 

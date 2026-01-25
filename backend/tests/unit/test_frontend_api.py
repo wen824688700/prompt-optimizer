@@ -72,20 +72,6 @@ async def test_frontend_apis():
                 else:
                     print(f"   ❌ 查询失败: {response.text}")
             
-            # 3. 测试配额 API
-            print(f"\n3. 获取配额信息 (GET /api/v1/quota)")
-            response = await client.get(
-                "http://127.0.0.1:8000/api/v1/quota",
-                params={"user_id": user_id, "account_type": "free"}
-            )
-            
-            print(f"   状态码: {response.status_code}")
-            if response.status_code == 200:
-                quota = response.json()
-                print(f"   ✅ 配额: {quota['used']}/{quota['total']}")
-            else:
-                print(f"   ❌ 请求失败")
-            
     except Exception as e:
         print(f"❌ 测试失败: {e}")
         import traceback

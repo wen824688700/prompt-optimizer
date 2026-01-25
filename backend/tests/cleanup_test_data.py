@@ -32,7 +32,7 @@ async def cleanup_test_data():
         for user_id in test_user_ids:
             print(f"\n清理用户 {user_id} 的数据...")
             
-            # 1. 删除版本数据
+            # 删除版本数据
             try:
                 response = await client.delete(
                     f"{supabase_url}/rest/v1/versions",
@@ -45,20 +45,6 @@ async def cleanup_test_data():
                     print(f"  ⚠️ 删除版本数据失败: {response.status_code}")
             except Exception as e:
                 print(f"  ❌ 删除版本数据出错: {e}")
-            
-            # 2. 删除配额数据
-            try:
-                response = await client.delete(
-                    f"{supabase_url}/rest/v1/user_quotas",
-                    headers=headers,
-                    params={"user_id": f"eq.{user_id}"}
-                )
-                if response.status_code in [200, 204]:
-                    print(f"  ✅ 已删除配额数据")
-                else:
-                    print(f"  ⚠️ 删除配额数据失败: {response.status_code}")
-            except Exception as e:
-                print(f"  ❌ 删除配额数据出错: {e}")
 
 if __name__ == "__main__":
     print("开始清理测试数据...")

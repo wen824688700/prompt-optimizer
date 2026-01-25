@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import email_auth, feedback, frameworks, prompts, quota, versions
+from app.api import email_auth, feedback, frameworks, prompts, versions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,7 +50,6 @@ app.include_router(email_auth.router)
 app.include_router(feedback.router)
 app.include_router(frameworks.router)
 app.include_router(prompts.router)
-app.include_router(quota.router)
 app.include_router(versions.router)
 
 

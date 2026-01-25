@@ -9,10 +9,12 @@ import LoadingSkeleton from '@/components/LoadingSkeleton';
 import ModelSelector from '@/components/ModelSelector';
 import LoginModal from '@/components/LoginModal';
 import UserDropdown from '@/components/UserDropdown';
+import ApiConfigModal from '@/components/ApiConfigModal';
 import { validateInputLength, validateFileType, validateFileSize, formatFileSize } from '@/lib/utils';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { useModelStore } from '@/lib/stores/modelStore';
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useApiConfigStore } from '@/lib/stores/apiConfigStore';
 import { apiClient } from '@/lib/api/client';
 
 export default function InputPage() {
@@ -20,11 +22,13 @@ export default function InputPage() {
   const [input, setInput] = useState('');
   const { selectedModel, setSelectedModel } = useModelStore();
   const { isAuthenticated, user } = useAuthStore();
+  const { apiKey, isConfigured, loadConfig } = useApiConfigStore();
   const [attachment, setAttachment] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showApiConfigModal, setShowApiConfigModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -35,7 +39,9 @@ export default function InputPage() {
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    // 加载 API 配置
+    loadConfig(selectedModel);
+  }, [selectedModel]);
 
   // 自动调整 textarea 高度
   useEffect(() => {
@@ -81,10 +87,10 @@ export default function InputPage() {
   };
 
   const handleOptimize = async () => {
-    // 检查是否登录
-    if (!isAuthenticated) {
-      setShowLoginModal(true);
-      showToast('请先登录后再使用优化功能', 'info');
+    // 检查 API 配置
+    if (!isConfigured || !apiKey) {
+      showToast('请先配置 API 密钥', 'error');
+      setShowApiConfigModal(true);
       return;
     }
 
@@ -130,6 +136,14 @@ export default function InputPage() {
       setIsOptimizing(true); // 显示小鸟加载动画
       setIsModalOpen(false); // 关闭追问弹窗
       
+      // 检查 API 密钥
+      if (!apiKey) {
+        setIsOptimizing(false);
+        showToast('API 密钥未配置，请先配置', 'error');
+        setShowApiConfigModal(true);
+        return;
+      }
+      
       const selectedFramework = frameworks.find(f => f.id === answers.frameworkId);
       if (selectedFramework) {
         localStorage.setItem('selectedFramework', JSON.stringify(selectedFramework));
@@ -155,6 +169,7 @@ export default function InputPage() {
         user_id: user?.id || 'dev-user-001',
         account_type: user?.accountType || 'free',
         model: selectedModel,
+        api_key: apiKey, // 传递 API 密钥
       });
       
       setIsOptimizing(false); // 隐藏小鸟加载动画
@@ -344,6 +359,18 @@ export default function InputPage() {
                   />
                 </div>
 
+                {/* API 配置按钮 */}
+                <button
+                  onClick={() => setShowApiConfigModal(true)}
+                  className="p-2.5 text-gray-400 hover:text-purple-400 hover:bg-[#242d3d] rounded-xl transition-all"
+                  title="API 配置"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+
                 {/* 字符计数 */}
                 <span className={`text-xs font-medium ${charCount < 10 ? 'text-gray-500' : 'text-purple-400'}`}>
                   {charCount} / 最少 10
@@ -384,6 +411,16 @@ export default function InputPage() {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
+      />
+
+      {/* API 配置弹窗 */}
+      <ApiConfigModal
+        isOpen={showApiConfigModal}
+        onClose={() => setShowApiConfigModal(false)}
+        onSave={() => {
+          showToast('API 配置保存成功', 'success');
+          loadConfig(selectedModel);
+        }}
       />
     </main>
   );

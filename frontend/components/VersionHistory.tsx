@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuthStore } from '@/lib/stores/authStore';
 
 interface Version {
   id: string;
@@ -23,6 +24,7 @@ interface VersionHistoryProps {
   onRestoreVersion: (version: Version) => void;
   onDeleteVersion?: (versionId: string) => void;
   onRenameVersion?: (versionId: string, newName: string) => void;
+  onLoginClick?: () => void;
 }
 
 interface WorkflowGroup {
@@ -39,11 +41,15 @@ export default function VersionHistory({
   onRestoreVersion,
   onDeleteVersion,
   onRenameVersion,
+  onLoginClick,
 }: VersionHistoryProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [topicSummaries, setTopicSummaries] = useState<Map<string, string>>(new Map());
+  const [showLoginPrompt, setShowLoginPrompt] = useState(true);
+  
+  const user = useAuthStore((s) => s.user);
 
   // 导入 API 客户端
   const { apiClient } = require('@/lib/api/client');
@@ -179,6 +185,45 @@ export default function VersionHistory({
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        {/* 登录提示卡片（匿名用户且版本数 >= 3） */}
+        {!user && versions.length >= 3 && showLoginPrompt && onLoginClick && (
+          <div className="m-3 p-4 bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-500/30 rounded-lg">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  <span className="text-sm font-semibold text-white">永久保存您的版本</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">
+                  您已创建 {versions.length} 个版本。登录后可跨设备同步，最多保存 20 条版本记录。
+                </p>
+                <button
+                  onClick={onLoginClick}
+                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 text-white text-xs font-medium hover:shadow-lg transition-all"
+                >
+                  立即登录
+                </button>
+              </div>
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="p-1 text-gray-500 hover:text-gray-300 transition-colors"
+                aria-label="关闭提示"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         {groupedVersions.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">

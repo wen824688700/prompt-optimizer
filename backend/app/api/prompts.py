@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field
 
 from app.api.frameworks import get_llm_service
 from app.services.llm_factory import LLMFactory
-from app.services.quota_manager import QuotaManager
 from app.services.version_manager import VersionManager, VersionType
 
 logger = logging.getLogger(__name__)
@@ -19,7 +18,6 @@ router = APIRouter(prefix="/api/v1/prompts", tags=["prompts"])
 
 # 全局服务实例
 version_manager = VersionManager()
-quota_manager = QuotaManager()
 
 
 def _load_framework_doc(framework_id: str) -> str:
@@ -181,6 +179,7 @@ class GenerateRequest(BaseModel):
     user_id: str = Field("test_user", description="用户 ID")
     account_type: str = Field("free", description="账户类型（free/pro）")
     model: str = Field("deepseek", description="使用的模型（deepseek/gemini）")
+    api_key: str = Field(..., description="用户提供的 API 密钥")
     timezone_offset: int = Field(0, description="用户时区偏移量（分钟），例如 +480 表示 UTC+8")
 
 
@@ -199,32 +198,6 @@ async def generate_prompt(request: GenerateRequest):
     根据用户输入、选择的框架和追问答案，生成优化后的提示词
     """
     try:
-        # 检查配额
-        can_generate = await quota_manager.consume_quota(
-            user_id=request.user_id,
-            account_type=request.account_type,
-            user_timezone_offset=request.timezone_offset
-        )
-
-        if not can_generate:
-            quota_status = await quota_manager.check_quota(
-                user_id=request.user_id,
-                account_type=request.account_type,
-                user_timezone_offset=request.timezone_offset
-            )
-            raise HTTPException(
-                status_code=403,
-                detail={
-                    "code": "QUOTA_EXCEEDED",
-                    "message": f"您已达到每日配额限制（{quota_status.total}次）",
-                    "quota": {
-                        "used": quota_status.used,
-                        "total": quota_status.total,
-                        "reset_time": quota_status.reset_time.isoformat()
-                    }
-                }
-            )
-
         # 验证模型类型
         if request.model not in LLMFactory.get_supported_models():
             raise HTTPException(
@@ -232,8 +205,22 @@ async def generate_prompt(request: GenerateRequest):
                 detail=f"不支持的模型类型: {request.model}"
             )
 
-        # 获取对应模型的 LLM 服务
-        llm_service = get_llm_service(request.model)
+        # 验证 API 密钥
+        if not request.api_key:
+            raise HTTPException(
+                status_code=400,
+                detail="API 密钥不能为空"
+            )
+
+        # 使用用户提供的 API 密钥创建 LLM 服务
+        from app.config import get_settings
+        settings = get_settings()
+        
+        llm_service = LLMFactory.create_service_with_key(
+            model=request.model,
+            api_key=request.api_key,
+            settings=settings
+        )
 
         # 加载框架文档
         framework_doc = _load_framework_doc(request.framework_id)
@@ -290,6 +277,7 @@ async def generate_prompt(request: GenerateRequest):
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Error generating prompt: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"提示词生成失败: {str(e)}"

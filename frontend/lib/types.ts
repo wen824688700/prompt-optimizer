@@ -30,13 +30,6 @@ export interface User {
   accountType: 'free' | 'pro';
 }
 
-export interface QuotaInfo {
-  used: number;
-  total: number;
-  resetTime: string; // UTC ISO 8601
-  canGenerate: boolean;
-}
-
 export interface SubscriptionInfo {
   status: 'active' | 'cancelled' | 'expired';
   nextBillingDate: string;

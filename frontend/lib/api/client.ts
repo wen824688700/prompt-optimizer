@@ -41,6 +41,7 @@ export interface GeneratePromptRequest {
   user_id?: string;
   account_type?: 'free' | 'pro';
   model?: string;
+  api_key: string; // 新增：用户的 API 密钥
 }
 
 export interface GeneratePromptResponse {
@@ -74,13 +75,6 @@ export interface SaveVersionRequest {
   framework_id?: string;
   framework_name?: string;
   original_input?: string;
-}
-
-export interface QuotaResponse {
-  used: number;
-  total: number;
-  reset_time: string;
-  can_generate: boolean;
 }
 
 export interface FeatureOption {
@@ -246,16 +240,6 @@ class APIClient {
     const response = await fetch(
       this.buildUrl(`/api/v1/versions/${encodeURIComponent(versionId)}?user_id=${encodeURIComponent(userId)}`),
       { method: 'DELETE', headers: { 'Content-Type': 'application/json' } }
-    );
-
-    if (!response.ok) throw new Error(await getResponseErrorMessage(response));
-    return response.json();
-  }
-
-  async getQuota(userId: string = 'test_user', accountType: 'free' | 'pro' = 'free'): Promise<QuotaResponse> {
-    const response = await fetch(
-      this.buildUrl(`/api/v1/quota?user_id=${encodeURIComponent(userId)}&account_type=${accountType}`),
-      { method: 'GET', headers: { 'Content-Type': 'application/json' } }
     );
 
     if (!response.ok) throw new Error(await getResponseErrorMessage(response));
